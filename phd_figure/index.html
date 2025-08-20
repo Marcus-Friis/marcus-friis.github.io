@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>DARA Viz</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        :root {
+            --bg: #fff;
+            --muted: #666;
+            --accent: #222
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            background: var(--bg);
+            font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial
+        }
+
+        .wrap {
+            width: 100%;
+            height: 92vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+            max-height: 900px;
+            background: transparent;
+            overflow: inherit;
+        }
+
+        .node {
+            fill: #ffffff;
+            stroke: #1119;
+            stroke-width: 4;
+            rx: 18px;
+            ry: 18px;
+        }
+
+        .emoji-text {
+            font-size: 48px;
+            text-anchor: middle;
+            dominant-baseline: central
+        }
+
+        .hashtag-text {
+            font-size: 64px;
+            text-anchor: middle;
+            dominant-baseline: central;
+            font-weight: 700;
+            font-style: italic;
+            fill: #333;
+        }
+
+        /* .link {
+            stroke: #8d8d8d;
+            stroke-width: 1;
+            stroke-linecap: round
+        } */
+
+        .wave-bar {
+            fill: #333
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <svg id="viz" viewBox="0 0 1200 700" preserveAspectRatio="xMidYMid meet"></svg>
+    </div>
+
+    <script>
+        const svg = d3.select('#viz');
+        const vb = svg.attr("viewBox").split(" ").map(Number); // [0,0,1200,700]
+
+        // node sizes
+        const nodeW = 75, nodeH = 125;
+
+        // load data
+        d3.json("data.json").then(data => {
+            // scale positions (your JSON coordinates are small)
+            const scaleX = d3.scaleLinear().domain([0, 100]).range([200, vb[2] - 200]);
+            const scaleY = d3.scaleLinear().domain([0, 100]).range([100, vb[3] - 100]);
+
+            // map node id → coordinates
+            const nodeById = {};
+            data.nodes.forEach(n => {
+                nodeById[n.id] = {
+                    ...n,
+                    X: scaleX(n.x),
+                    Y: scaleY(n.y)
+                };
+            });
+
+            // links
+            // links
+            svg.selectAll("path.link")
+                .data(data.links)
+                .enter()
+                .append("path")
+                .attr("class", "link")
+                .attr("d", d => {
+                    const source = nodeById[d.source];
+                    const target = nodeById[d.target];
+
+                    // Compute control point for a simple upward/downward curve
+                    const cx = (source.X + target.X) / 2;
+                    const cy = (source.Y + target.Y) / 2 - 10; // adjust -10 for curve amount
+
+                    return `M${source.X},${source.Y} Q${cx},${cy} ${target.X},${target.Y}`;
+                })
+                .attr("fill", "none")
+                .attr("stroke", d => {
+                    const sClass = nodeById[d.source].class;
+                    const tClass = nodeById[d.target].class;
+
+                    if (sClass === "main-node" || tClass === "main-node") return "#222"; // bold black
+                    if (sClass === "sub-node" || tClass === "sub-node") return "#666"; // muted grey
+                    if (sClass === "subsub-node" || tClass === "subsub-node") return "#aaa"; // light grey
+                    return "#999";
+                })
+                .attr("stroke-width", d => {
+                    const sClass = nodeById[d.source].class;
+                    const tClass = nodeById[d.target].class;
+
+                    if (sClass === "main-node" || tClass === "main-node") return 2;
+                    if (sClass === "sub-node" || tClass === "sub-node") return 1.5;
+                    if (sClass === "subsub-node" || tClass === "subsub-node") return 1;
+                    return 2;
+                })
+                .attr("stroke-dasharray", d => {
+                    const sClass = nodeById[d.source].class;
+                    const tClass = nodeById[d.target].class;
+
+                    if (sClass === "subsub-node" || tClass === "subsub-node") return "4,4"; // dashed for smallest
+                    return null; // solid for others
+                })
+                .attr("opacity", 0.9);
+
+
+            // group for each node node
+            const nodeGroups = svg.selectAll("g.node-node")
+                .data(data.nodes)
+                .enter()
+                .append("g")
+                .attr("class", d => d.class)
+                .attr("transform", d => {
+                    const pos = nodeById[d.id];
+                    if (d.class === 'sub-node') {
+                        const scale = 0.66; // scale factor for sub-nodes
+                        return `translate(${pos.X},${pos.Y}) scale(${scale})`;
+                    } else if (d.class === 'subsub-node') {
+                        const scale = 0.33; // scale factor for sub-nodes
+                        return `translate(${pos.X},${pos.Y}) scale(${scale})`;
+                    } else {
+                        return `translate(${pos.X},${pos.Y})`;
+                    }
+                });
+
+            // Node
+            nodeGroups.append("rect")
+                .attr("x", -nodeW / 2)
+                .attr("y", -nodeH / 2)
+                .attr("width", nodeW)
+                .attr("height", nodeH)
+                .attr("class", d => `node ${d.class}`);
+
+            // Reaction
+            nodeGroups.filter(d => d.reaction)
+                .append("text")
+                .text("😀")
+                .attr("class", "emoji-text")
+                .attr('transform', d => d.class === 'main-node' ? `translate(${-nodeW / 2 - 5},${nodeH - 58})` : '');
+
+            // Entity
+            nodeGroups.filter(d => d.entity)
+                .append("image")
+                .attr("href", "person.svg")
+                .attr("width", 64)
+                .attr("x", -32)
+                .attr("y", -32)
+                .attr("transform", d => d.class === 'main-node' ? `translate(-42, -${nodeH / 2})` : '');
+
+            // Hashtag
+            nodeGroups.filter(d => d.hashtag)
+                .append("text")
+                .text("#")
+                .attr("class", "hashtag-text")
+                .attr('transform', d => d.class === 'main-node' ? `translate(${nodeW / 2},${-nodeH + 58})` : '');
+
+            // Waveform
+            const BAR_COUNT = 12;
+            const BAR_WIDTH = 6;
+            const spacing = 4;
+            const totalW = BAR_COUNT * (BAR_WIDTH + spacing);
+            const baseX = -totalW / 2;
+
+            // For each node with audio, create its own waveform
+            nodeGroups.filter(d => d.audio).each(function (d) {
+                const waveGroup = d3.select(this)
+                    .append('g')
+                    .attr('transform', d.class === 'main-node' ? `translate(${nodeW - 10},${nodeH - 52})` : '');
+
+                // initialize bars for this node
+                const bars = d3.range(BAR_COUNT).map(i => ({ x: baseX + i * (BAR_WIDTH + spacing), h: 8 }));
+
+                const rects = waveGroup.selectAll('rect').data(bars).enter().append('rect')
+                    .attr('class', 'wave-bar')
+                    .attr('x', b => b.x)
+                    .attr('y', b => -b.h / 2)
+                    .attr('width', BAR_WIDTH)
+                    .attr('height', b => b.h)
+                    .attr('rx', 3);
+
+                bars.forEach(b => {
+                    b.h = 8 + Math.random() * 40;  // random height
+                });
+                rects.data(bars)
+                    .attr('y', b => -b.h / 2)
+                    .attr('height', b => b.h);
+            });
+
+            // label
+            // nodeGroups
+            //     .append("text")
+            //     .text(d => d.id)
+            //     .attr("class", "hashtag-text")
+            //     .attr('transform', d => `translate(${0},${-nodeH + 48})`);
+
+            // ----------------- ANIMATIONS -----------------
+            function runAnimations(svg) {
+                // Animate links (fade in sequentially)
+                svg.selectAll("path.link")
+                    .attr("opacity", 0)
+                    .transition()
+                    .delay((d, i) => i * 100)
+                    .duration(800)
+                    .attr("opacity", 0.9);
+
+                // Animate node groups (scale in with staggered delay)
+                svg.selectAll("g")
+                    .attr("transform", function (d) {
+                        if (!d) return d3.select(this).attr("transform"); // keep existing for links
+                        const t = d3.select(this).attr("transform");
+                        return t.replace(/scale\([^)]+\)/, "scale(0)");
+                    })
+                    .style("opacity", 0)
+                    .transition()
+                    .delay((d, i) => i * 150)
+                    .duration(600)
+                    .style("opacity", 1)
+                    .attr("transform", function (d) {
+                        if (!d) return d3.select(this).attr("transform");
+                        const t = d3.select(this).attr("transform");
+                        if (d.class === "sub-node") return t.replace("scale(0)", "scale(0.66)");
+                        if (d.class === "subsub-node") return t.replace("scale(0)", "scale(0.33)");
+                        return t.replace("scale(0)", "scale(1)");
+                    });
+
+                // Animate emoji bounce once
+                svg.selectAll("text.emoji-text")
+                    .transition()
+                    .delay(1000)
+                    .duration(800)
+                    .ease(d3.easeBounceOut)
+                    .attr("transform", function () {
+                        const t = d3.select(this).attr("transform");
+                        return t + " scale(1.2)";
+                    })
+                    .transition()
+                    .duration(500)
+                    .attr("transform", function () {
+                        const t = d3.select(this).attr("transform");
+                        return t.replace(/scale\(.*\)/, "scale(1)");
+                    });
+
+                // Animate waveforms (endless pulsing)
+                svg.selectAll("g").each(function () {
+                    const rects = d3.select(this).selectAll("rect.wave-bar");
+                    if (rects.empty()) return;
+
+                    function animateBars() {
+                        rects.transition()
+                            .duration(300)
+                            .attr("y", () => -Math.random() * 25)
+                            .attr("height", () => 10 + Math.random() * 40)
+                            .on("end", animateBars);
+                    }
+                    animateBars();
+                });
+            }
+
+            // Call the animation runner
+            runAnimations(svg);
+            // ----------------- END ANIMATIONS -----------------
+
+
+        });
+
+
+    </script>
+</body>

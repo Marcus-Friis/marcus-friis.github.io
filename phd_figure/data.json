@@ -1,0 +1,244 @@
+{
+  "nodes": [
+    {
+      "id": 1,
+      "x": 50,
+      "y": 50,
+      "class": "main-node",
+      "audio": true,
+      "entity": true,
+      "reaction": true,
+      "hashtag": true
+    },
+    {
+      "id": 2,
+      "x": 73,
+      "y": 104,
+      "class": "sub-node",
+      "audio": true,
+      "entity": false,
+      "reaction": false,
+      "hashtag": false
+    },
+    {
+      "id": 3,
+      "x": 90,
+      "y": 84,
+      "class": "sub-node",
+      "audio": true,
+      "entity": false,
+      "reaction": false,
+      "hashtag": false
+    },
+    {
+      "id": 4,
+      "x": 58,
+      "y": 4,
+      "class": "sub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": false,
+      "hashtag": true
+    },
+    {
+      "id": 5,
+      "x": 78,
+      "y": 38,
+      "class": "sub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": false,
+      "hashtag": true
+    },
+    {
+      "id": 6,
+      "x": 98,
+      "y": 1,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": false,
+      "hashtag": true
+    },
+    {
+      "id": 7,
+      "x": 104,
+      "y": 38,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": false,
+      "hashtag": true
+    },
+    {
+      "id": 8,
+      "x":29,
+      "y": 75,
+      "class": "sub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": true,
+      "hashtag": false
+    },
+    {
+      "id": 9,
+      "x": 6,
+      "y": 85,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": true,
+      "hashtag": false
+    },
+    {
+      "id": 10,
+      "x": 23,
+      "y": 115,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": false,
+      "reaction": true,
+      "hashtag": false
+    },
+    {
+      "id": 11,
+      "x": 33,
+      "y": -2,
+      "class": "sub-node",
+      "audio": false,
+      "entity": true,
+      "reaction": false,
+      "hashtag": false
+    },
+    {
+      "id": 12,
+      "x": 6,
+      "y": 23,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": true,
+      "reaction": false,
+      "hashtag": false
+    },
+    {
+      "id": 13,
+      "x": 14,
+      "y": -14,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": true,
+      "reaction": false,
+      "hashtag": false
+    },
+    {
+      "id": 14,
+      "x": 26,
+      "y": 33,
+      "class": "sub-node",
+      "audio": false,
+      "entity": true,
+      "reaction": false,
+      "hashtag": false
+    },
+    {
+      "id": 15,
+      "x": -7,
+      "y": -20,
+      "class": "subsub-node",
+      "audio": false,
+      "entity": true,
+      "reaction": false,
+      "hashtag": false
+    }
+  ],
+  "links": [
+    {
+      "source": 1,
+      "target": 2
+    },
+    {
+      "source": 1,
+      "target": 3
+    },
+    {
+      "source": 2,
+      "target": 3
+    },
+    {
+      "source": 1,
+      "target": 4
+    },
+    {
+      "source": 1,
+      "target": 5
+    },
+    {
+      "source": 4,
+      "target": 5
+    },
+    {
+      "source": 5,
+      "target": 6
+    },
+    {
+      "source": 5,
+      "target": 7
+    },
+    {
+      "source": 6,
+      "target": 7
+    },
+    {
+      "source": 7,
+      "target": 3
+    },
+    {
+      "source": 1,
+      "target": 8
+    },
+    {
+      "source": 8,
+      "target": 9
+    },
+    {
+      "source": 8,
+      "target": 10
+    },
+    {
+      "source": 1,
+      "target": 14
+    },
+    {
+      "source": 1,
+      "target": 11
+    },
+    {
+      "source": 14,
+      "target": 11
+    },
+    {
+      "source": 14,
+      "target": 12
+    },
+    {
+      "source": 12,
+      "target": 11
+    },
+    {
+      "source": 12,
+      "target": 13
+    },
+    {
+      "source": 13,
+      "target": 14
+    },
+    {
+      "source": 13,
+      "target": 11
+    },
+    {
+      "source": 13,
+      "target": 15
+    }
+  ]
+}
