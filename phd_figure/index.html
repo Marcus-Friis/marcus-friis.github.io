@@ -61,12 +61,6 @@
             fill: #333;
         }
 
-        /* .link {
-            stroke: #8d8d8d;
-            stroke-width: 1;
-            stroke-linecap: round
-        } */
-
         .wave-bar {
             fill: #333
         }
@@ -101,7 +95,6 @@
                 };
             });
 
-            // links
             // links
             svg.selectAll("path.link")
                 .data(data.links)
@@ -201,42 +194,77 @@
             const BAR_COUNT = 12;
             const BAR_WIDTH = 6;
             const spacing = 4;
-            const totalW = BAR_COUNT * (BAR_WIDTH + spacing);
+            const totalW = BAR_COUNT * (BAR_WIDTH + spacing) - spacing;
             const baseX = -totalW / 2;
 
-            // For each node with audio, create its own waveform
             nodeGroups.filter(d => d.audio).each(function (d) {
+                const isMain = d.class === 'main-node';
                 const waveGroup = d3.select(this)
                     .append('g')
-                    .attr('transform', d.class === 'main-node' ? `translate(${nodeW - 10},${nodeH - 52})` : '');
+                    .attr('class', 'waveform')
+                    .attr('transform', isMain ? `translate(${nodeW - 10},${nodeH - 52})` : `translate(0,0)`);
 
-                // initialize bars for this node
-                const bars = d3.range(BAR_COUNT).map(i => ({ x: baseX + i * (BAR_WIDTH + spacing), h: 8 }));
+                const bars = d3.range(BAR_COUNT).map(i => ({
+                    i,
+                    x: baseX + i * (BAR_WIDTH + spacing),
+                    base: 8, // minimum height
+                    // randomize frequency & phase so bars move differently — this creates the "audio" feel
+                    freq: 1.2 + Math.random() * 1.6,
+                    phase: Math.random() * Math.PI * 2,
+                    amp: 18 + Math.random() * 24 // amplitude
+                }));
 
-                const rects = waveGroup.selectAll('rect').data(bars).enter().append('rect')
+                const rects = waveGroup.selectAll('rect')
+                    .data(bars)
+                    .enter().append('rect')
                     .attr('class', 'wave-bar')
                     .attr('x', b => b.x)
-                    .attr('y', b => -b.h / 2)
                     .attr('width', BAR_WIDTH)
-                    .attr('height', b => b.h)
-                    .attr('rx', 3);
+                    .attr('rx', 3)
+                    .attr('y', b => -b.base / 2)
+                    .attr('height', b => b.base);
 
-                bars.forEach(b => {
-                    b.h = 8 + Math.random() * 40;  // random height
-                });
-                rects.data(bars)
-                    .attr('y', b => -b.h / 2)
-                    .attr('height', b => b.h);
+                this.__waveRects = rects;
+                this.__waveBars = bars;
+                this.__volume = (d.volume == null) ? 1 : Math.max(0, d.volume);
             });
 
-            // label
-            // nodeGroups
-            //     .append("text")
-            //     .text(d => d.id)
-            //     .attr("class", "hashtag-text")
-            //     .attr('transform', d => `translate(${0},${-nodeH + 48})`);
+            // Global animation timer for smooth continuous animation
+            const start = Date.now();
+            d3.timer(function () {
+                const t = (Date.now() - start) / 1000; // seconds
 
-            // ----------------- ANIMATIONS -----------------
+                // Slight global pulsation (a "beat") to add life
+                const globalBeat = 0.6 + 0.4 * (0.5 + 0.5 * Math.sin(t * 1.1));
+
+                // iterate over all waveform parents
+                svg.selectAll('g.waveform').each(function () {
+                    const parent = this.parentNode; // the <g> representing the node
+                    const rects = this.__waveRects || d3.select(this).selectAll('rect');
+                    const bars = this.__waveBars || rects.data();
+                    const volume = parent && parent.__data__ && parent.__data__.volume != null ? parent.__data__.volume : 1;
+
+                    // compute a small traveling phase shift across bars so the wave moves horizontally
+                    // travel speed can be tuned (0.6 here)
+                    const travel = t * 0.6;
+
+                    // update rects directly for frame-by-frame animation
+                    rects.each(function (b, i) {
+                        // a travelling sinusoid + per-bar freq + small random jitter
+                        const travelPhase = travel - i * 0.25; // offset per bar
+                        const sine = Math.sin(travelPhase * b.freq + b.phase);
+
+                        // envelope: combine abs(sine) with a faint beat and volume
+                        const env = (Math.abs(sine) * 0.9 + 0.1) * globalBeat * (volume || 1);
+
+                        const h = b.base + env * b.amp;
+                        d3.select(this)
+                            .attr('height', h)
+                            .attr('y', -h / 2);
+                    });
+                });
+            });
+
             function runAnimations(svg) {
                 // Animate links (fade in sequentially)
                 svg.selectAll("path.link")
@@ -283,29 +311,14 @@
                         return t.replace(/scale\(.*\)/, "scale(1)");
                     });
 
-                // Animate waveforms (endless pulsing)
-                svg.selectAll("g").each(function () {
-                    const rects = d3.select(this).selectAll("rect.wave-bar");
-                    if (rects.empty()) return;
-
-                    function animateBars() {
-                        rects.transition()
-                            .duration(300)
-                            .attr("y", () => -Math.random() * 25)
-                            .attr("height", () => 10 + Math.random() * 40)
-                            .on("end", animateBars);
-                    }
-                    animateBars();
-                });
             }
 
-            // Call the animation runner
             runAnimations(svg);
             // ----------------- END ANIMATIONS -----------------
 
-
         });
-
 
     </script>
 </body>
+
+</html>
