@@ -1,0 +1,26 @@
+<!doctype html>
+<html ng-app="appName">
+<head>
+  <meta charset="utf-8" />
+  <title>ABCJS + Angular Example</title>
+
+  <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/twitter-bootstrap/2.0.4/css/bootstrap-combined.min.css">
+  <link rel="stylesheet" href="abcjs-audio.css">
+</head>
+<body>
+  <div class="container">
+    <a href="#!/">Front</a> |
+    <a href="#!/sheet">Sheet</a>
+    <hr>
+    <!-- The routed templates will be injected here -->
+    <div ng-view></div>
+  </div>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+
+  <script src="abcjs-basic-min.js"></script>
+  <script src="components.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

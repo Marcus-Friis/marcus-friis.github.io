@@ -1,0 +1,9 @@
+<div ng-controller="frontpageCtrl">
+    <h1>Welcome</h1>
+    <div ng-repeat="(index, song) in songs">
+        <div id="{{index}}"></div>
+    </div>
+    <div id="warnings" style="color: darkred; margin: 10px 20px;">
+        {{warningText}}
+    </div>
+</div>

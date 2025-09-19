@@ -1,0 +1,15 @@
+<div ng-controller="sheetCtrl">
+    <div id="paper"></div>
+
+    <div class="controls" style="margin:10px 20px;">
+        <label>Transpose half-steps:
+            <input class="transpose-half-steps" type="number" min="-24" max="24" step="1" ng-model="transposeBy">
+        </label>
+        <button ng-click="renderPlayer()">Show Audio Player</button>
+    </div>
+
+    <div ng-if="showPlayer" id="audio"></div>
+    <div id="warnings" style="color: darkred; margin: 10px 20px;">
+        {{warningText}}
+    </div>
+</div>
