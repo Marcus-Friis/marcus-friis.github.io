@@ -1,1 +1,0 @@
-import{a as r,f as a}from"../chunks/B9_YgKhe.js";import"../chunks/C-2amH1Q.js";import{X as m}from"../chunks/D7zdPJYv.js";var p=a("<h2>Your stats</h2> <p>To be implemented...</p>",1);function s(o){var t=p();m(2),r(o,t)}export{s as component};
